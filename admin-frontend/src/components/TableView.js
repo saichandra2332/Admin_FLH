@@ -1202,16 +1202,15 @@ function TableView({ tableName }) {
     setError("");
     setMessage("");
     try {
-      let endpoint = `/admin/table/${tableName}`;
-
-      if (tableName === "products") {
-        endpoint = "/api/products";
-      }
+      // FIXED: Always use admin endpoint for products
+      const endpoint = `/admin/table/${tableName}`;
 
       const res = await api.get(endpoint, {
         params: { limit: 100, offset: 0 },
       });
-      setRows(res.data.rows || res.data || []);
+      
+      // FIXED: Handle admin endpoint response format
+      setRows(res.data.rows || []);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch data");

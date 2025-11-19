@@ -2664,6 +2664,91 @@ def get_scheme_admin_details(
         print(f"🟥 Error fetching scheme details: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Add this with your other endpoints in main.py
+
+# PRODUCTS API ENDPOINTS
+# FIXED PRODUCTS API ENDPOINTS
+@app.get("/api/products")
+def get_products(
+    category: Optional[str] = None,
+    brand: Optional[str] = None,
+    featured: Optional[bool] = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    """Get all products (public endpoint for frontend) - FIXED RESPONSE"""
+    try:
+        base_query = "SELECT * FROM products WHERE status = 'active'"
+        params = {"limit": limit, "offset": offset}
+        
+        if category:
+            base_query += " AND category = :category"
+            params["category"] = category
+            
+        if brand:
+            base_query += " AND brand = :brand"
+            params["brand"] = brand
+            
+        if featured is not None:
+            base_query += " AND is_featured = :featured"
+            params["featured"] = featured
+        
+        base_query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
+        
+        query = text(base_query)
+        result = db.execute(query, params)
+        products = [dict(row) for row in result.mappings()]
+        
+        # Return products array directly (not wrapped in object)
+        return products
+        
+    except Exception as e:
+        print(f"🟥 Error fetching products: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/products/category/{category}")
+def get_products_by_category(
+    category: str, 
+    db: Session = Depends(get_db)
+):
+    """Get products by category - FIXED RESPONSE"""
+    try:
+        query = text("""
+            SELECT * FROM products 
+            WHERE category = :category AND status = 'active' 
+            ORDER BY created_at DESC
+        """)
+        result = db.execute(query, {"category": category})
+        products = [dict(row) for row in result.mappings()]
+        
+        # Return products array directly
+        return products
+        
+    except Exception as e:
+        print(f"🟥 Error fetching products by category: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/products/featured")
+def get_featured_products(db: Session = Depends(get_db)):
+    """Get featured products - FIXED RESPONSE"""
+    try:
+        query = text("""
+            SELECT * FROM products 
+            WHERE is_featured = true 
+            AND status = 'active' 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        """)
+        result = db.execute(query)
+        products = [dict(row) for row in result.mappings()]
+        
+        # Return products array directly
+        return products
+        
+    except Exception as e:
+        print(f"🟥 Error fetching featured products: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

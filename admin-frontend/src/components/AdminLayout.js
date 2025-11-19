@@ -143,7 +143,7 @@ function AdminLayout({ onLogout }) {
       ] = await Promise.allSettled([
         api.get("/admin/table/users?limit=1000"),
         api.get("/admin/table/orders?limit=1000"),
-        api.get("/api/products?limit=1000"),
+        api.get("/admin/table/products?limit=1000"), // FIXED: Use admin endpoint
         api.get("/admin/table/schemes?limit=1000"),
         api.get("/admin/table/lucky_draw_master?limit=1000"),
         api.get("/admin/table/bill_uploads?limit=1000"),
@@ -164,9 +164,9 @@ function AdminLayout({ onLogout }) {
         return sum + (parseFloat(order.total_amount) || 0);
       }, 0);
 
-      // Process products data
+      // Process products data - FIXED: Use admin endpoint format
       const totalProducts = productsRes.status === 'fulfilled' ? 
-        (productsRes.value.data || productsRes.value.data?.rows || []).length : 0;
+        (productsRes.value.data.rows || []).length : 0;
 
       // Process schemes data
       const totalSchemes = schemesRes.status === 'fulfilled' ? 
@@ -585,16 +585,7 @@ function AdminLayout({ onLogout }) {
                       </div>
                     </div>
                     
-                    {/* <div className="stat-card">
-                      <div className="stat-header">
-                        <div className="stat-icon revenue">💰</div>
-                      </div>
-                      <div className="stat-value">₹{stats.totalRevenue.toLocaleString()}</div>
-                      <div className="stat-label">Total Revenue</div>
-                      <div className="stat-change positive">
-                        ↑ {Math.round((stats.totalRevenue / Math.max(stats.totalRevenue - 10000, 1)) * 100 - 100)}% growth
-                      </div>
-                    </div> */}
+                    
                     
                     <div className="stat-card">
                       <div className="stat-header">
